@@ -40,33 +40,33 @@ def extract_ips(url):
         elements = soup.find_all(['tr', 'li', 'div'])
         
         # Extract IPs
-        ips = []
+        ips = set()  # Use set to avoid duplicates
         for element in elements:
             element_text = element.get_text()
-            # Find IPv4 addresses
+            # Find IPv4 and IPv6 addresses
             ipv4_matches = re.findall(ipv4_pattern, element_text)
-            # Find IPv6 addresses
             ipv6_matches = re.findall(ipv6_pattern, element_text)
-            # Combine and label IPs
-            for ip in ipv4_matches:
-                ips.append(f"IPv4: {ip}")
-            for ip in ipv6_matches:
-                ips.append(f"IPv6: {ip}")
+            # Add to set
+            ips.update(ipv4_matches)
+            ips.update(ipv6_matches)
         
         return ips
     
     except requests.RequestException as e:
         print(f"Error fetching {url}: {e}")
-        return []
+        return set()
 
-# Collect IPs from all URLs and write to file
+# Collect unique IPs from all URLs
+all_ips = set()
+for url in urls:
+    print(f"Scraping {url}...")
+    all_ips.update(extract_ips(url))
+
+# Write unique IPs to file
 try:
     with open('ip.txt', 'w') as file:
-        for url in urls:
-            print(f"Scraping {url}...")
-            ips = extract_ips(url)
-            for ip in ips:
-                file.write(ip + '\n')
-    print('IP addresses saved to ip.txt.')
+        for ip in sorted(all_ips):  # Sort for consistent output
+            file.write(ip + '\n')
+    print(f'{len(all_ips)} unique IP addresses saved to ip.txt.')
 except OSError as e:
     print(f"Error writing to ip.txt: {e}")

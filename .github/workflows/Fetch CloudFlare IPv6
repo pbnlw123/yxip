@@ -1,0 +1,36 @@
+name: Fetch CloudFlare IPv6
+
+on:
+  schedule:
+    # 每天 08:00 UTC 跑（北京时间 16:00）
+    - cron: '0 8 * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install deps
+        run: npm ci --silent || npm install --silent
+
+      - name: Run Puppeteer script
+        run: node get-cloudflare-ipv6.js | tee ipv6.txt
+        env:
+          # 可选：设置时区
+          TZ: Asia/Shanghai
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-ipv6
+          path: ipv6.txt
+          retention-days: 30

@@ -1,14 +1,16 @@
-name: Fetch CloudFlare IPv6
+name: Fetch CloudFlare IPv6 (hostmonit)
 
 on:
   schedule:
-    # 每天 08:00 UTC 跑（北京时间 16:00）
+    # 每天 08:00 UTC（北京时间 16:00）
     - cron: '0 8 * * *'
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   crawl:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 允许写仓库
 
     steps:
       - name: Checkout
@@ -23,14 +25,13 @@ jobs:
         run: npm ci --silent || npm install --silent
 
       - name: Run Puppeteer script
-        run: node get-cloudflare-ipv6.js | tee ipv6.txt
+        run: node fetch-hostmonit-ipv6.js > ipv6.txt
         env:
-          # 可选：设置时区
           TZ: Asia/Shanghai
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: cloudflare-ipv6
-          path: ipv6.txt
-          retention-days: 30
+      - name: Commit & push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ipv6.txt
+          git diff --cached --quiet || (git commit -m "chore: update Cloudflare IPv6 ranges [skip ci]" && git push)

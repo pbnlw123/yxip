@@ -28,7 +28,7 @@ jobs:
           pip install playwright
           playwright install chromium --with-deps
 
-        - name: Run crawler & write ipv6.txt
+      - name: Run crawler & write ipv6.txt
         run: python get_cf_ipv6.py > ipv6.txt
         timeout-minutes: 3          # 允许最多 3 分钟（180 秒）
         

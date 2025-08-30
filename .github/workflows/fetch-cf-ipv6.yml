@@ -29,7 +29,9 @@ jobs:
         run: npm ci                 # 现在 package-lock.json 已存在，不会 254
 
       - name: Fetch IPv6
-        run: node fetch-hostmonit-ipv6.js > ipv6.txt
+        run: |
+          curl -sSL https://stock.hostmonit.com/CloudFlareYesV6/list \
+          | sort -u > ipv6.txt
         env:
           TZ: Asia/Shanghai
 
